@@ -17,8 +17,7 @@ app.get('/', (req, res) => {
   res.send('Land API running');
 });
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://admin:askar1234Arshath@cluster0.pbf7dfj.mongodb.net/clothing?retryWrites=true&w=majority';
-
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://land:tokyodel9600@cluster0.ptiwivd.mongodb.net/';
 mongoose.connect(MONGO_URI)
     .then(() => console.log('mongoDB Connected'))
     .catch(err => console.error('mongoDB connection error:', err));
