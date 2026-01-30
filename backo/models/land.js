@@ -1,14 +1,38 @@
 const mongoose = require('mongoose');
 
-const LandSchema = new mongoose.Schema({
-  title: String,
-  price: Number,
-  location: String,
-  owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }
-});
+const landSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    description: {
+      type: String
+    },
+    price: {
+      type: Number,
+      required: true
+    },
+    location: {
+      type: String,
+      required: true
+    },
+    area: {
+      type: Number, // sqft / cent / acre
+      required: true
+    },
+    images: [
+      {
+        type: String
+      }
+    ],
+    isAvailable: {
+      type: Boolean,
+      default: true
+    }
+  },
+  { timestamps: true }
+);
 
-// ✅ Prevent overwrite error
-module.exports = mongoose.models.Land || mongoose.model('Land', LandSchema);
+module.exports = mongoose.model('user', landSchema);
