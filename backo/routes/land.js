@@ -9,21 +9,32 @@ const upload = require('../middleware/upload');
  */
 router.post('/', upload.array('images'), async (req, res) => {
     try {
-        const { title, price, location, area, description } = req.body;
+        const {
+            title,
+            price,
+            squareFeet,
+            city,
+            street,
+            description
+        } = req.body;
 
-        if (!title || !price || !location || !area) {
+        // ✅ required fields check
+        if (!title || !price || !squareFeet || !city || !street) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
+        // ✅ images
         const images = req.files
             ? req.files.map(file => `/uploads/${file.filename}`)
             : [];
 
+        // ✅ create land
         const land = await Land.create({
             title,
             price,
-            location,
-            area,
+            squareFeet,
+            city,
+            street,
             description,
             images
         });
@@ -33,6 +44,7 @@ router.post('/', upload.array('images'), async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+
 
 /**
  * ✅ GET ALL LANDS

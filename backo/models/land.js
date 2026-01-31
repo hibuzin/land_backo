@@ -14,17 +14,23 @@ const landSchema = new mongoose.Schema(
       type: Number,
       required: true
     },
-    location: {
+    squareFeet: {
+      type: Number,
+      required: true
+    },
+    city: {
       type: String,
       required: true
     },
-    area: {
-      type: Number, // sqft / cent / acre
+    street: {
+      type: String,
       required: true
     },
+
     images: [
       {
-        type: String
+        type: String,
+        required: true
       }
     ],
     isAvailable: {
