@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Land = require('../models/Land');
+const Land = require('../models/land');
 const upload = require('../middleware/upload');
 
 /**
