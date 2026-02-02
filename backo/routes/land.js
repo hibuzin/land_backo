@@ -24,9 +24,8 @@ router.post('/', upload.array('images'), async (req, res) => {
         }
 
         // ✅ images
-        const images = req.files
-            ? req.files.map(file => `/uploads/${file.filename}`)
-            : [];
+       const images = req.files.map(file => file.path);
+
 
         // ✅ create land
         const land = await Land.create({

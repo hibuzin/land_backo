@@ -14,11 +14,6 @@ app.use(express.json());
 
 const uploadDir = path.join(__dirname, 'uploads');
 
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-
 
 const landRoutes = require('./routes/land');
 app.use('/api/auth', require('./routes/auth'));

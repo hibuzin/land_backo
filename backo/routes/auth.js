@@ -6,6 +6,7 @@ const User = require('../models/user');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+
 const router = express.Router();
 
 // 🔹 POST /api/auth/google
