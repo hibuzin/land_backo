@@ -23,7 +23,7 @@ router.post('/google', async (req, res) => {
         const { email, name, picture, sub } = payload; // sub = googleId
 
         // ✅ 1. Find user by googleId FIRST
-        let user = await User.findOne({ googleId: sub });
+       let user = await User.findOne({ googleId: sub });
 
         if (!user) {
             const userData = {
