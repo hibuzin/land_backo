@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const fs = require('fs');
 const path = require('path');
 
 
@@ -10,10 +11,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+const uploadDir = path.join(__dirname, 'uploads');
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+
+
 const landRoutes = require('./routes/land');
-
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/lands', landRoutes);
 

@@ -1,11 +1,13 @@
 const multer = require('multer');
 const path = require('path');
 
-/* ================= STORAGE ================= */
+// ✅ absolute uploads path
+const uploadDir = path.join(__dirname, '..', 'uploads');
 
+/* ================= STORAGE ================= */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const uniqueName =
@@ -14,26 +16,21 @@ const storage = multer.diskStorage({
   }
 });
 
-/* ================= FILE FILTER (optional) ================= */
-
+/* ================= FILE FILTER ================= */
 const fileFilter = (req, file, cb) => {
-  if (
-    file.mimetype.startsWith('image/')
-  ) {
+  if (file.mimetype.startsWith('image/')) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files allowed'), false);
+    cb(new Error('Only images files allowed'), false);
   }
 };
 
 /* ================= MULTER ================= */
-
 const upload = multer({
   storage,
   fileFilter,
-  // ❌ NO limits for count → unlimited images
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB per image (optional)
+    fileSize: 10 * 1024 * 1024 // 10MB
   }
 });
 
