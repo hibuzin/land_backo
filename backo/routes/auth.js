@@ -14,55 +14,53 @@ router.post('/google', async (req, res) => {
     try {
         const { idToken } = req.body;
 
-        // Verify the token against your Google Client ID
         const ticket = await googleClient.verifyIdToken({
             idToken,
-            audience: process.env.GOOGLE_CLIENT_ID, 
+            audience: process.env.GOOGLE_CLIENT_ID,
         });
 
-        // Extracting 'sub' is important for your 'googleId' field
-        const { email, name, picture, sub } = ticket.getPayload();
+        const payload = ticket.getPayload();
+        const { email, name, picture, sub } = payload; // sub = googleId
 
-        let user = await User.findOne({ email });
+        // ✅ 1. Find user by googleId FIRST
+        let user = await User.findOne({ googleId: sub });
 
         if (!user) {
-            // Create new user if they don't exist
-            user = await User.create({
+            const userData = {
                 name,
-                email,
                 avatar: picture,
-                googleId: sub, // 'sub' is the unique Google ID
+                googleId: sub,
                 authProvider: 'google',
-                isVerified: true
-            });
-        } else if (user.authProvider !== 'google') {
-            // Update existing user to Google provider if needed
-            user.authProvider = 'google';
-            user.googleId = sub;
-            await user.save();
+                isVerified: true,
+            };
+
+            // ✅ 2. Only add email if it exists
+            if (email) userData.email = email;
+
+            user = await User.create(userData);
         }
 
-        // Generate your internal JWT for the app session
         const token = jwt.sign(
             { id: user._id },
             process.env.JWT_SECRET || 'secretkey',
             { expiresIn: '1d' }
         );
 
-        res.json({ 
-            token, 
+        res.json({
+            token,
             user: {
                 id: user._id,
                 name: user.name,
                 email: user.email,
-                avatar: user.avatar
-            } 
+                avatar: user.avatar,
+            },
         });
 
     } catch (err) {
-        console.error('Google login error:', err.message);
-        res.status(401).json({ error: err.message });
+        console.error('Google login error:', err);
+        res.status(401).json({ message: err.message });
     }
 });
+
 
 module.exports = router;
