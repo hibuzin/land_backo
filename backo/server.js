@@ -12,6 +12,7 @@ app.use(express.json());
 // ROUTES
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/lands', require('./routes/land'));
+app.use('/api/contact', require('./routes/contact'));
 
 app.get('/', (req, res) => {
   res.send('Land API running');
