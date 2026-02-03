@@ -1,30 +1,39 @@
 const express = require('express');
-const Contact = require('../models/contact');
+const nodemailer = require('nodemailer');
 
 const router = express.Router();
 
-// POST /api/contact
 router.post('/', async (req, res) => {
   try {
     const { name, email, message } = req.body;
 
     if (!name || !email || !message) {
-      return res.status(400).json({ message: 'All fields are required' });
+      return res.status(400).json({ message: 'All fields required' });
     }
 
-    const contact = await Contact.create({
-      name,
-      email,
-      message,
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
     });
 
-    res.status(201).json({
-      success: true,
-      message: 'Message sent successfully',
+    await transporter.sendMail({
+      from: email,
+      to: process.env.EMAIL_USER,
+      subject: 'New Contact Message',
+      text: `
+Name: ${name}
+Email: ${email}
+Message: ${message}
+      `,
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+
+    res.json({ success: true, message: 'Message sent' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Email failed' });
   }
 });
 
