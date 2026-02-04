@@ -27,7 +27,7 @@ Message: ${message}
 
         // 📩 Auto-reply to USER
         await resend.emails.send({
-            from: 'hibuz',
+            from: 'onboarding@resend.dev',
             to: email,
             subject: 'We received your message',
             text: `Hi ${name},
