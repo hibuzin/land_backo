@@ -15,9 +15,9 @@ router.post('/', async (req, res) => {
 
         // 📩 Send email to YOU
         await resend.emails.send({
-            from: 'contact form', // test sender
+            from: 'user', // test sender
             to: process.env.EMAIL_USER,
-            subject: 'New Contact Message',
+            subject: 'Contact form',
             text: `
 Name: ${name}
 Email: ${email}
@@ -27,7 +27,7 @@ Message: ${message}
 
         // 📩 Auto-reply to USER
         await resend.emails.send({
-            from: 'onboarding@resend.dev',
+            from: 'hibuz',
             to: email,
             subject: 'We received your message',
             text: `Hi ${name},
