@@ -2,13 +2,13 @@ const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
   name: String,
-  email: { type: String, unique: true, sparse: true, },
+  email: { type: String, required: true, unique: true,},
   avatar: String,
   googleId: String,
   authProvider: {
     type: String,
     enum: ['local', 'google'],
-    default: 'google'
+    default: 'local',
   },
   isVerified: {
     type: Boolean,
