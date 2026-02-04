@@ -4,10 +4,9 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-
 const router = express.Router();
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // 🔹 POST /api/auth/google
 router.post('/google', async (req, res) => {
@@ -19,25 +18,26 @@ router.post('/google', async (req, res) => {
             audience: process.env.GOOGLE_CLIENT_ID,
         });
 
-        const payload = ticket.getPayload();
-        const { email, name, picture, sub } = payload; // sub = googleId
 
-        // ✅ 1. Find user by googleId FIRST
-       let user = await User.findOne({ googleId: sub });
+        const { email, name, picture, sub } = ticket.getPayload();
+
+
+        let user = await User.findOne({ email });
 
         if (!user) {
-            const userData = {
+            user = await User.create({
                 name,
+                email,
                 avatar: picture,
                 googleId: sub,
                 authProvider: 'google',
                 isVerified: true,
-            };
-
-            // ✅ 2. Only add email if it exists
-            if (email) userData.email = email;
-
-            user = await User.create(userData);
+            });
+        } else if (user.authProvider !== 'google') {
+            // Update existing user to Google provider if needed
+            user.authProvider = 'google';
+            user.googleId = sub;
+            await user.save();
         }
 
         const token = jwt.sign(
