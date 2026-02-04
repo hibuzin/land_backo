@@ -1,63 +1,48 @@
 const express = require('express');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
 const router = express.Router();
 
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 router.post('/', async (req, res) => {
-    try {
-        const { name, email, message } = req.body;
+  try {
+    const { name, email, message } = req.body;
 
-        if (!name || !email || !message) {
-            return res.status(400).json({ message: 'All fields required' });
-        }
+    if (!name || !email || !message) {
+      return res.status(400).json({ message: 'All fields required' });
+    }
 
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true, // SSL
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-            connectionTimeout: 10000,
-            socketTimeout: 10000,
-        });
-
-
-        // 🔍 DEBUG HERE
-        transporter.verify((error, success) => {
-            if (error) {
-                console.error('SMTP Verify Error:', error);
-            } else {
-                console.log('SMTP Server is ready');
-            }
-        });
-
-        await transporter.sendMail({
-            from: `"Contact Form" <${process.env.EMAIL_USER}>`,
-            replyTo: email,
-            to: process.env.EMAIL_USER,
-            subject: 'New Contact Message',
-            text: `
+    // 📩 Send email to YOU
+    await resend.emails.send({
+      from: 'onboarding@resend.dev', // test sender
+      to: process.env.EMAIL_USER,
+      subject: 'New Contact Message',
+      text: `
 Name: ${name}
 Email: ${email}
 Message: ${message}
       `,
-        });
+    });
 
-        res.json({ success: true, message: 'Message sent' });
-    } catch (err) {
-        console.error('❌ Email Error Details ↓↓↓');
-        console.error('Message:', err.message);
-        console.error('Code:', err.code);
-        console.error('Command:', err.command);
-        console.error('Stack:', err.stack);
+    // 📩 Auto-reply to USER
+    await resend.emails.send({
+      from: 'onboarding@resend.dev',
+      to: email,
+      subject: 'We received your message',
+      text: `Hi ${name},
 
-        res.status(500).json({
-            message: 'Email failed',
-            error: err.message,
-        });
-    }
+Thanks for contacting us! We received your message and will get back to you shortly.
+
+— Team`,
+    });
+
+    res.json({ success: true, message: 'Message sent' });
+
+  } catch (err) {
+    console.error('Email Error:', err);
+    res.status(500).json({ message: 'Email failed', error: err.message });
+  }
 });
 
 module.exports = router;
