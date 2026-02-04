@@ -15,16 +15,17 @@ router.post('/', upload.array('images'), async (req, res) => {
             squareFeet,
             city,
             street,
+            mobile,
             description
         } = req.body;
 
         // ✅ required fields check
-        if (!title || !price || !squareFeet || !city || !street) {
+        if (!title || !price || !squareFeet || !city || !street || !mobile) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
         // ✅ images
-       const images = req.files.map(file => file.path);
+        const images = req.files.map(file => file.path);
 
 
         // ✅ create land
@@ -34,6 +35,7 @@ router.post('/', upload.array('images'), async (req, res) => {
             squareFeet,
             city,
             street,
+            mobile,
             description,
             images
         });

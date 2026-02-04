@@ -26,6 +26,7 @@ const landSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    mobile: {type: String,required: true},
 
     images: [
       {
