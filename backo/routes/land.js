@@ -101,10 +101,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-/**
- * ✅ DELETE LAND
- * DELETE /api/lands/:id
- */
+
 router.delete('/:id', async (req, res) => {
     try {
         const land = await Land.findByIdAndDelete(req.params.id);
