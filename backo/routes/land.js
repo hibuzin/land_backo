@@ -2,12 +2,14 @@ const express = require('express');
 const router = express.Router();
 const Land = require('../models/land');
 const upload = require('../middleware/upload');
+const auth = require('../middleware/auth');
+
 
 /**
  * ✅ CREATE LAND
  * POST /api/lands
  */
-router.post('/', upload.array('images'), async (req, res) => {
+router.post('/',auth, upload.array('images'), async (req, res) => {
     try {
         const {
             title,
@@ -37,7 +39,8 @@ router.post('/', upload.array('images'), async (req, res) => {
             street,
             mobile,
             description,
-            images
+            images,
+             user: req.user._id,
         });
 
         res.status(201).json(land);
@@ -60,10 +63,8 @@ router.get('/', async (req, res) => {
     }
 });
 
-/**
- * ✅ GET SINGLE LAND
- * GET /api/lands/:id
- */
+
+
 router.get('/:id', async (req, res) => {
     try {
         const land = await Land.findById(req.params.id);
