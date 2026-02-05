@@ -1,70 +1,111 @@
 const express = require('express');
-const { OAuth2Client } = require('google-auth-library');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 const router = express.Router();
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// 🔹 POST /api/auth/google
-router.post('/google', async (req, res) => {
+router.post('/register', async (req, res) => {
   try {
-    const { idToken } = req.body;
+    const { name, email, password } = req.body;
 
-    if (!idToken) {
-      return res.status(400).json({ message: 'idToken is required' });
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'All fields required' });
     }
 
-    // Verify token with Google
-    const ticket = await googleClient.verifyIdToken({
-      idToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-
-    const payload = ticket.getPayload();
-    const {
-      sub: googleId,
-      email,
-      name,
-      picture,
-      email_verified,
-    } = payload;
-
-    if (!email_verified) {
-      return res.status(401).json({ message: 'Email not verified by Google' });
+    const existingUser = await User.findOne({ email });
+    if (existingUser && existingUser.isVerified) {
+      return res.status(409).json({ message: 'Email already registered' });
     }
 
-    // Find or create user
-    let user = await User.findOne({ email });
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (!user) {
-      user = await User.create({
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min
+
+    await User.findOneAndUpdate(
+      { email },
+      {
         name,
         email,
-        avatar: picture,
-        googleId,
-        authProvider: 'google',
-        isVerified: true,
+        password: hashedPassword,
+        otp,
+        otpExpiresAt,
+        isVerified: false,
+      },
+      { upsert: true }
+    );
+
+    // ⚠️ DEV ONLY
+    res.status(200).json({
+      message: 'OTP generated',
+      otp, // 👈 returned here
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(401).json({ message: 'Invalid credentials' });
+  }
+
+  if (!user.isVerified) {
+    return res.status(403).json({ message: 'Verify OTP first' });
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    return res.status(401).json({ message: 'Invalid credentials' });
+  }
+
+  const token = jwt.sign(
+    { id: user._id },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  res.json({ message: 'Login successful', token });
+});
+
+
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const user = await User.findOneAndUpdate(
+      {
+        email,
+        otp,
+        otpExpiresAt: { $gt: new Date() },
+        isVerified: false,
+      },
+      {
+        $set: { isVerified: true },
+        $unset: { otp: 1, otpExpiresAt: 1 },
+      },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(400).json({
+        message: 'OTP invalid or expired',
       });
     }
 
-    // Create JWT
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    res.status(200).json({
-      message: 'Google login successful',
-      token,
-      user,
-    });
-
-  } catch (error) {
-    console.error('Google login error:', error);
-    res.status(500).json({ message: 'Google login failed' });
+    res.json({ message: 'OTP verified successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
   }
 });
+
+
+
 
 module.exports = router;

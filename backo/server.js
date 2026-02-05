@@ -13,6 +13,8 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/lands', require('./routes/land'));
 app.use('/api/contact', require('./routes/contact'));
+app.use('/api/wishlist', require('./routes/wishlist'));
+
 
 app.get('/', (req, res) => {
   res.send('Land API running');
