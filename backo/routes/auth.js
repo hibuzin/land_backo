@@ -105,6 +105,11 @@ router.post('/verify-otp', async (req, res) => {
   }
 });
 
+// Logout route
+router.post('/logout', (req, res) => {
+  // For JWT, "logout" is client-side: delete the token
+  res.json({ message: 'Logged out successfully' });
+});
 
 
 
