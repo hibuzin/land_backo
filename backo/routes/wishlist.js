@@ -5,10 +5,7 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-/**
- * ADD to wishlist
- * POST /api/wishlist
- */
+
 router.post('/', auth, async (req, res) => {
     try {
         const { landId } = req.body;

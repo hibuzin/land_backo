@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const WishlistSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    land: { type: mongoose.Schema.Types.ObjectId, ref: 'Land', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  land: { type: mongoose.Schema.Types.ObjectId, ref: 'Land', required: true },
 }, { timestamps: true });
 
 // Prevent duplicates: same user cannot add same land twice

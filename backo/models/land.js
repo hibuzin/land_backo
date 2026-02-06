@@ -27,12 +27,14 @@ const landSchema = new mongoose.Schema(
       required: true
     },
     mobile: {type: String,required: true},
+     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
     images: [
       {
         type: String,
         required: true
-      }
+      },
+      
     ],
     isAvailable: {
       type: Boolean,
@@ -42,4 +44,4 @@ const landSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('user', landSchema);
+module.exports = mongoose.model('Land', landSchema);
