@@ -55,15 +55,18 @@ router.get('/', auth, async (req, res) => {
 router.delete('/:landId', auth, async (req, res) => {
     try {
         const item = await Wishlist.findOneAndDelete({
-            user: req.user.id,
-            land: req.params.landId,
+            user: req.userId,           // current logged-in user
+            land: req.params.landId,    // the land to remove
         });
 
         if (!item) {
             return res.status(404).json({ message: 'Land not found in wishlist' });
         }
 
-        res.json({ message: 'Removed from wishlist' });
+        res.json({
+            message: 'Removed from wishlist',
+            deletedId: item._id        // optional: return wishlist id deleted
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
