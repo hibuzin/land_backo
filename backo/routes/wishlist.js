@@ -1,75 +1,59 @@
 const express = require('express');
-const Wishlist = require('../models/wishlist');
-const Land = require('../models/land'); // import Land model
-const auth = require('../middleware/auth');
-
 const router = express.Router();
+const auth = require('../middleware/auth');
+const User = require('../models/user');
+const Land = require('../models/land');
 
-
-router.post('/', auth, async (req, res) => {
-    try {
-        const { landId } = req.body;
-        if (!landId) {
-            return res.status(400).json({ message: 'Land ID is required' });
-        }
-
-        // Check if already in wishlist
-        const exists = await Wishlist.findOne({ user: req.user.id, land: landId });
-        if (exists) {
-            return res.status(400).json({ message: 'Already in wishlist' });
-        }
-
-        const item = await Wishlist.create({
-            user: req.user.id,
-            land: landId,
-        });
-
-        res.status(201).json({ message: 'Added to wishlist', item });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
-/**
- * GET all wishlist items for user
- * GET /api/wishlist
- */
+// GET wishlist lands
 router.get('/', auth, async (req, res) => {
     try {
-        const wishlist = await Wishlist.find({ user: req.user.id })
-            .populate('land') // populate land details
-            .sort({ createdAt: -1 });
+        const user = await User.findById(req.userId).populate('wishlist');
+        if (!user) return res.status(404).json({ error: 'User not found' });
 
-        res.json({ wishlist });
+        res.json({ wishlist: user.wishlist });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
-/**
- * REMOVE from wishlist
- * DELETE /api/wishlist/:landId
- */
-router.delete('/:landId', auth, async (req, res) => {
+// POST add land to wishlist
+router.post('/:landId', auth, async (req, res) => {
     try {
-        const item = await Wishlist.findOneAndDelete({
-            user: req.userId,           // current logged-in user
-            land: req.params.landId,    // the land to remove
-        });
+        const { landId } = req.params;
+        const user = await User.findById(req.userId);
 
-        if (!item) {
-            return res.status(404).json({ message: 'Land not found in wishlist' });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        if (user.wishlist.includes(landId)) {
+            return res.status(400).json({ error: 'Land already in wishlist' });
         }
 
-        res.json({
-            message: 'Removed from wishlist',
-            deletedId: item._id        // optional: return wishlist id deleted
-        });
+        user.wishlist.push(landId);
+        await user.save();
+
+        res.json({ message: 'Added to wishlist', wishlist: user.wishlist });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// DELETE remove land from wishlist
+router.delete('/:landId', auth, async (req, res) => {
+    try {
+        const { landId } = req.params;
+        const user = await User.findById(req.userId);
+
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        user.wishlist = user.wishlist.filter(id => id.toString() !== landId);
+        await user.save();
+
+        res.json({ message: 'Removed from wishlist', wishlist: user.wishlist });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
     }
 });
 

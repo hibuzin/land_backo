@@ -26,8 +26,10 @@ router.post('/',auth, upload.array('images'), async (req, res) => {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
-        // ✅ images
-        const images = req.files.map(file => file.path);
+        
+     const images = req.files.map(file => file.path);
+
+
 
 
         // ✅ create land
@@ -40,7 +42,7 @@ router.post('/',auth, upload.array('images'), async (req, res) => {
             mobile,
             description,
             images,
-             user: req.user._id,
+             owner: req.user._id
         });
 
         res.status(201).json(land);
