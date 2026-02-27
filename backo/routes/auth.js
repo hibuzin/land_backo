@@ -46,60 +46,71 @@ router.post('/register', async (req, res) => {
   }
 });
 
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const email = req.body.email?.trim().toLowerCase();
+    const otp = String(req.body.otp || '').trim();
 
+    // 1. Input validation
+    if (!email || !otp) {
+      return res.status(400).json({ message: 'Email and OTP are required' });
+    }
 
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+    // 2. Find user by email first
+    const user = await User.findOne({ email });
 
-  const user = await User.findOne({ email });
-  if (!user) {
-    return res.status(401).json({ message: 'Invalid credentials' });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    // 3. Already verified?
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'User already verified' });
+    }
+
+    // 4. OTP expired?
+    if (!user.otpExpiresAt || user.otpExpiresAt < new Date()) {
+      return res.status(400).json({ message: 'OTP has expired' });
+    }
+
+    // 5. OTP mismatch?
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    // 6. All good — verify the user and clear OTP fields
+    user.isVerified = true;
+    user.otp = undefined;
+    user.otpExpiresAt = undefined;
+    await user.save();
+
+    res.status(200).json({ message: 'OTP verified successfully' });
+
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
   }
-
-  if (!user.isVerified) {
-    return res.status(403).json({ message: 'Verify OTP first' });
-  }
-
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
-    return res.status(401).json({ message: 'Invalid credentials' });
-  }
-
-  const token = jwt.sign(
-    { id: user._id },
-    process.env.JWT_SECRET,
-    { expiresIn: '7d' }
-  );
-
-  res.json({ message: 'Login successful', token });
 });
 
 
-router.post('/verify-otp', async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
 
-    const user = await User.findOneAndUpdate(
-      {
-        email,
-        otp,
-        otpExpiresAt: { $gt: new Date() },
-        isVerified: false,
-      },
-      {
-        $set: { isVerified: true },
-        $unset: { otp: 1, otpExpiresAt: 1 },
-      },
-      { new: true }
-    );
-
-    if (!user) {
-      return res.status(400).json({
-        message: 'OTP invalid or expired',
-      });
+    if (!user || !user.isVerified) {
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    res.json({ message: 'OTP verified successfully' });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    });
+
+    res.json({ message: 'Login successful', token });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
