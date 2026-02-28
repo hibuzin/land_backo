@@ -5,10 +5,7 @@ const upload = require('../middleware/upload');
 const auth = require('../middleware/auth');
 
 
-/**
- * ✅ CREATE LAND
- * POST /api/lands
- */
+
 router.post('/',auth, upload.array('images'), async (req, res) => {
     try {
         const {
@@ -21,18 +18,18 @@ router.post('/',auth, upload.array('images'), async (req, res) => {
             description
         } = req.body;
 
-        // ✅ required fields check
+        
         if (!title || !price || !squareFeet || !city || !street || !mobile) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
         
-     const images = req.files.map(file => file.path);
+     const images = req.files ? req.files.map(file => file.path) : [];
 
 
 
 
-        // ✅ create land
+        
         const land = await Land.create({
             title,
             price,
@@ -52,10 +49,7 @@ router.post('/',auth, upload.array('images'), async (req, res) => {
 });
 
 
-/**
- * ✅ GET ALL LANDS
- * GET /api/lands
- */
+
 router.get('/', async (req, res) => {
     try {
         const lands = await Land.find().sort({ createdAt: -1 });
@@ -81,10 +75,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-/**
- * ✅ UPDATE LAND
- * PUT /api/lands/:id
- */
+
 router.put('/:id', async (req, res) => {
     try {
         const land = await Land.findByIdAndUpdate(

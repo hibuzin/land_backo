@@ -11,7 +11,7 @@ app.use(express.json());
 
 // ROUTES
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/lands', require('./routes/land'));
+app.use('/api/land', require('./routes/land'));
 app.use('/api/contact', require('./routes/contact'));
 app.use('/api/wishlist', require('./routes/wishlist'));
 app.use('/api/chat', require('./routes/chat'));

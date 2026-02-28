@@ -16,7 +16,7 @@ const landSchema = new mongoose.Schema(
     },
     isAvailable: { type: Boolean, default: true }
   },
-  { timestamps: true }
-);
+  { timestamps: true }); 
+
 
 module.exports = mongoose.model('Land', landSchema);

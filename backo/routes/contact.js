@@ -13,9 +13,9 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ message: 'All fields required' });
         }
 
-        // 📩 Send email to YOU
+       
         await resend.emails.send({
-            from: 'user', // test sender
+            from: 'user',
             to: process.env.EMAIL_USER,
             subject: 'Contact form',
             text: `
