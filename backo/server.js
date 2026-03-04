@@ -2,14 +2,20 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const cloudinary = require('./config/cloudinary'); // just to init config
+const cloudinary = require('./config/cloudinary');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+
 app.use(express.json());
 
-// ROUTES
+
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/land', require('./routes/land'));
 app.use('/api/contact', require('./routes/contact'));

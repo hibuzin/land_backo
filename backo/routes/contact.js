@@ -13,10 +13,10 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ message: 'All fields required' });
         }
 
-       
+
         await resend.emails.send({
-            from: 'user',
-            to: process.env.EMAIL_USER,
+            from: "Land App <onboarding@resend.dev>",
+            to: "hibuzin@gmail.com",
             subject: 'Contact form',
             text: `
 Name: ${name}
@@ -25,10 +25,10 @@ Message: ${message}
       `,
         });
 
-        // 📩 Auto-reply to USER
+
         await resend.emails.send({
-            from: 'onboarding@resend.dev',
-            to: email,
+            from: "Land App <onboarding@resend.dev>",
+            to: "hibuzin@gmail.com",
             subject: 'We received your message',
             text: `Hi ${name},
 

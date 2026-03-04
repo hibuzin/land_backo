@@ -6,7 +6,7 @@ const User = require('../models/user');
 const router = express.Router();
 
 
-// ================= REGISTER =================
+
 router.post('/register', async (req, res) => {
   try {
     let { name, email, password } = req.body;
@@ -15,7 +15,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'All fields required' });
     }
 
-    // Normalize email
+
     email = email.trim().toLowerCase();
 
     const existingUser = await User.findOne({ email });
@@ -26,7 +26,7 @@ router.post('/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Generate 6 digit OTP as STRING
+ 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
@@ -44,7 +44,7 @@ router.post('/register', async (req, res) => {
       { upsert: true, new: true }
     );
 
-    // ⚠️ DEV ONLY – remove in production
+    
     res.status(200).json({
       message: 'OTP generated',
       otp,
