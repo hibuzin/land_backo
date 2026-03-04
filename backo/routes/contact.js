@@ -28,7 +28,7 @@ Message: ${message}
 
         await resend.emails.send({
             from: "hibuz <onboarding@resend.dev>",
-            to: "hibuzin@gmail.com",
+            to: email,
             subject: 'We received your message',
             text: `Hi ${name},
 
